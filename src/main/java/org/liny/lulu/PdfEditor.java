@@ -12,13 +12,18 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 public class PdfEditor {
+    private static final int DEFAULT_USER_SPACE_UNIT_DPI = 72;
+
+    private static final float MM_TO_UNITS = 1/(10*2.54f)*DEFAULT_USER_SPACE_UNIT_DPI;
+
     public static final String INPUT_PDF = "c:/pro666/inkscape/voucher_no_txt.pdf";
     public static final String OUTPUT_PDF = "./output.pdf";
 
 
     static PDDocument loadDocument() throws IOException {
-        File file = new File(INPUT_PDF);
-        PDDocument doc = PDDocument.load(file);
+//        File file = new File(INPUT_PDF);
+        InputStream input = PdfEditor.class.getResourceAsStream("/voucher.pdf");
+        PDDocument doc = PDDocument.load(input);
         System.out.println("PDF loaded");
         return doc;
     }
@@ -40,16 +45,18 @@ public class PdfEditor {
         //Begin the Content stream
 
         contentStream.beginText();
-        contentStream.setTextMatrix(new Matrix(1f, 0f, 0f, -1f, 0f, 0f));
         //contentStream.setTextMatrix(Matrix.getRotateInstance(0, (float) 1.0, (float) -1.0));
         //Setting the font to the Content stream
         contentStream.setFont(PDType1Font.TIMES_BOLD_ITALIC, 14);
 
         //Setting the position for the line
-        contentStream.newLineAtOffset(20, -20);
+
+        float x = 110*MM_TO_UNITS;
+        float y = page.getBBox().getHeight() - 45*MM_TO_UNITS;
+        contentStream.newLineAtOffset(x,y);
 
 
-        String text1 = "Hi!!! https://facebook.com/haltery.wodze.liny";
+        String text1 = "Antoni Wzywa Do Broni";
 
         //Adding text in the form of string
         contentStream.showText(text1);
