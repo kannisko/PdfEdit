@@ -28,7 +28,7 @@ public class PdfEditor {
     private static final float POINTS_PER_INCH = 72;
     private static final float POINTS_PER_MM = 1 / (10 * 2.54f) * POINTS_PER_INCH;
 
-    public static final String INPUT_PDF = "/voucher.pdf";
+    public static final String INPUT_PDF = "/voucher v2.pdf";
     public static final String OUTPUT_PDF = "./output.pdf";
 
     private static final PDRectangle RECIP_BOX_MM = new PDRectangle(110, 45 + 18, 85, 18);
@@ -80,7 +80,7 @@ public class PdfEditor {
     public static void main(String argv[]) throws IOException, WriterException {
         PdfEditParams params = new PdfEditParams();
         params.setSerialNo("VLL12345");
-        params.setRecipient("");
+        params.setRecipient("Antoni Wchujdługienazwiskoalboijeszczedłuższe");
         params.setValue("2137PLN");
         params.setExpirationDate("2010-04-10");
         params.setQrCode(QrCodeGenerator.createQR(params.getSerialNo(), 200, 200));
@@ -91,7 +91,6 @@ public class PdfEditor {
     public static InputStream preparePdf(PdfEditParams editParams) throws IOException {
         PdfEditor editor = new PdfEditor();
         editor.editPage0(editParams);
-        editor.editPage1(editParams);
         return editor.saveDocument();
     }
 
@@ -136,12 +135,18 @@ public class PdfEditor {
         PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, false);
         RGB color = new RGB(100, 100, 100);
         if (!editParams.getRecipient().isEmpty()) {
-            putText(contentStream, editParams.getRecipient(), arialFont, 18, RECIP_BOX_MM, color);
+            putTextAutoFormat(contentStream, editParams.getRecipient(), arialFont, 18, RECIP_BOX_MM, color);
             addForm = false;
         }
         putText(contentStream, editParams.getValue(), arialFont, 18, VALUE_BOX_MM, color);
         putText(contentStream, editParams.getExpirationDate(), arialFont, 18, EXPIRATION_BOX_MM, color);
         putText(contentStream, editParams.getSerialNo(), arialFont, 14, SERIAL_BOX_MM, new RGB());
+
+        putText(contentStream, "Numer Seryjny: " + editParams.getSerialNo(), arialFont, 18, new PDRectangle(30, 150+30, 40, 20), new RGB());
+        PDImageXObject pdImage = PDImageXObject.createFromByteArray(doc, editParams.getQrCode(), "qrcode.png");
+        contentStream.drawImage(pdImage, getX(20), getY(150+100));
+
+
         contentStream.close();
 
         if (addForm) {
@@ -210,15 +215,47 @@ public class PdfEditor {
 
 
     private void editPage1(PdfEditParams editParams) throws IOException {
-        PDPage page = new PDPage(new PDRectangle(210 * POINTS_PER_MM, 148 * POINTS_PER_MM));
-        doc.addPage(page);
-        PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, false);
-        putText(contentStream, "Numer Seryjny: " + editParams.getSerialNo(), arialFont, 18, new PDRectangle(20, 30, 60, 20), new RGB());
-        PDImageXObject pdImage = PDImageXObject.createFromByteArray(doc, editParams.getQrCode(), "qrcode.png");
-        contentStream.drawImage(pdImage, getX(30), getY(100));
-        contentStream.close();
+
     }
 
+    float getScale(String txt,PDFont font, float fontSize,PDRectangle box) throws IOException {
+        Point ssize = getStringSize(txt, font, fontSize);
+        return box.getWidth() / ssize.x;
+    }
+
+    private void putTextAutoFormat(PDPageContentStream contentStream, String text, PDFont font, float fontSize, PDRectangle mmBox, RGB color) throws IOException {
+        text = text.strip();
+        PDRectangle box = mmToTextSpace(mmBox);
+        Point ssize = getStringSize(text, font, fontSize);
+        if( ssize.x <= box.getWidth()){
+            putText(contentStream,  text,  font,  fontSize,  mmBox,  color);
+            return;
+        }
+        float scale =  box.getWidth() / ssize.x;
+        if( scale > 0.8f ){
+            putText(contentStream,  text,  font,  fontSize*scale,  mmBox,  color);
+            return;
+        }
+        int spaceIndex = text.indexOf(' ');
+        String txt1,txt2;
+        if( spaceIndex > 0 ){
+            txt1 = text.substring(0,spaceIndex);
+            txt2 = text.substring(spaceIndex+1);
+        }else{
+            spaceIndex = text.length()/2;
+            txt1 = text.substring(0,spaceIndex);
+            txt2 = text.substring(spaceIndex);
+        }
+        float scale1 = getScale(txt1,font,fontSize,box);
+        float scale2 = getScale(txt2,font,fontSize,box);
+        scale = scale1 > scale2 ? scale2 : scale1;
+        fontSize *= scale;
+        PDRectangle mmBox1 = new PDRectangle(mmBox.getLowerLeftX(),mmBox.getLowerLeftY()-mmBox.getHeight()/2
+                ,mmBox.getWidth(),mmBox.getHeight()/2);
+        PDRectangle mmBox2 = new PDRectangle(mmBox.getLowerLeftX(),mmBox.getLowerLeftY(),mmBox.getWidth(),mmBox.getHeight()/2);
+        putText(contentStream,  txt1,  font,  fontSize,  mmBox1,  color);
+        putText(contentStream,  txt2,  font,  fontSize,  mmBox2,  color);
+    }
 
     private void putText(PDPageContentStream contentStream, String text, PDFont font, float fontSize, PDRectangle mmBox, RGB color) throws IOException {
         PDRectangle expBox = centerString(text, font, fontSize, mmBox);

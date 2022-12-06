@@ -12,6 +12,12 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/*
+0123456789
+ABCDEFGHIJ
+KLMNOPQRST
+*/
+
 public class QrCodeGenerator {
 
     public static byte[] createQR(String data,
@@ -34,6 +40,39 @@ public class QrCodeGenerator {
                 matrix,"png",outputStream);
 
         return outputStream.toByteArray();
+    }
+
+    public static String encodeNumber(int no){
+        if( no <= 0 || no >99999){
+            return null;
+        }
+        String noS = Integer.toString(no);
+        while(noS.length() <5 ){
+            noS ="0" + noS;
+        }
+        int tab[] = new int[5];
+        for( int i=0; i<5; i++){
+            tab[i] = noS.charAt(i) - '0';
+        }
+        String ss = "";
+        int prev = 1;
+        for(int i =4; i>=0; i-- ){
+            int val = tab[i];
+            val += prev;
+            val %= 10;;
+            prev = val;
+            ss += val;
+        }
+        return ss;
+    }
+
+    public static void main(String[] args) {
+        for( int no = 1; no < 100; no ++){
+            String ss = encodeNumber(no);
+            System.out.println(ss);
+
+        }
+
     }
 
 }
