@@ -1,122 +1,259 @@
 package org.liny.lulu;
 
+import com.google.zxing.WriterException;
+import org.apache.fontbox.ttf.TTFParser;
+import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.PDResources;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.util.Matrix;
+import org.apache.pdfbox.pdmodel.font.encoding.WinAnsiEncoding;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceCharacteristicsDictionary;
+import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 
 public class PdfEditor {
     private static final int DEFAULT_USER_SPACE_UNIT_DPI = 72;
 
-    private static final float MM_TO_UNITS = 1/(10*2.54f)*DEFAULT_USER_SPACE_UNIT_DPI;
+    private static final float MM_TO_UNITS = 1 / (10 * 2.54f) * DEFAULT_USER_SPACE_UNIT_DPI;
+    private static final float POINTS_PER_INCH = 72;
+    private static final float POINTS_PER_MM = 1 / (10 * 2.54f) * POINTS_PER_INCH;
 
-    public static final String INPUT_PDF = "c:/pro666/inkscape/voucher_no_txt.pdf";
+    public static final String INPUT_PDF = "/voucher.pdf";
     public static final String OUTPUT_PDF = "./output.pdf";
 
+    private static final Box RECIP_BOX_MM = new Box(110,45+18,85,18);
+    private static final Box EXPIRATION_BOX_MM = new Box(110,115+18,85,18);
+    private static final Box VALUE_BOX_MM = new Box(110,80+18,85,18);
+    private static final Box SERIAL_BOX_MM = new Box(5,133+18,20,18);
 
-    static PDDocument loadDocument() throws IOException {
-//        File file = new File(INPUT_PDF);
-        InputStream input = PdfEditor.class.getResourceAsStream("/voucher.pdf");
+    private final PDDocument doc;
+    private final PDFont arialFont;
+    private final float pageHeight;
+
+    static class Point{
+        float x;
+        float y;
+
+        public Point() {
+            this(0f,0f);
+        }
+        public Point(float x, float y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    static class Box extends Point{
+        float width;
+        float height;
+
+        public Box() {
+            super();
+            this.width = 0;
+            this.height = 0;
+        }
+
+        public Box(float x, float y, float width, float height) {
+            super(x, y);
+            this.width = width;
+            this.height = height;
+        }
+    }
+
+    static class RGB{
+        float red;
+        float green;
+        float blue;
+
+        public RGB() {
+        }
+
+        public RGB(int red, int green, int blue) {
+            this.red = red/255f;
+            this.green = green/255f;
+            this.blue = blue/255f;
+        }
+    }
+
+    private Point mmToTextSpace(Point pt){
+        return new Point(getX(pt.x),getY(pt.y));
+    }
+
+    private Box mmToTextSpace(Box bx){
+        return new Box(getX(bx.x),getY(bx.y),getX(bx.width),getX(bx.height));
+    }
+
+    public static void main(String argv[]) throws IOException, WriterException {
+        PdfEditParams params = new PdfEditParams();
+        params.setSerialNo("VLL12345");
+        params.setRecipient("Grzegorz Brzęczyszczykiewicz");
+        params.setValue("2137PLN");
+        params.setExpirationDate("2010-04-10");
+        params.setQrCode(QrCodeGenerator.createQR(params.getSerialNo(), 200,200));
+        preparePdf(params);
+    }
+
+
+    public static InputStream preparePdf(PdfEditParams editParams) throws IOException {
+        PdfEditor editor = new PdfEditor();
+        editor.editPage0(editParams);
+        editor.editPage1(editParams);
+        return editor.saveDocument();
+    }
+
+    private PdfEditor() throws IOException {
+        this.doc = loadDocument();
+        this.arialFont = getFont("/arial.ttf");
+        this.pageHeight = doc.getPage(0).getBBox().getHeight();
+    }
+
+    float getX(float x){
+        return x * MM_TO_UNITS;
+    }
+
+    float getY(float y){
+        return this.pageHeight - y * MM_TO_UNITS;
+    }
+
+     PDFont getFont(String name) throws IOException {
+        InputStream input = PdfEditor.class.getResourceAsStream(name);
+        return PDType0Font.load(doc, input);
+    }
+
+
+    Point getStringSize(String string,PDFont font, float fontSize) throws IOException {
+        return new Point(font.getStringWidth(string) / 1000 * fontSize,
+        font.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * fontSize);
+    }
+
+    Box centerString(String string, PDFont font, float fontSize, Box boxInMM) throws IOException {
+        Point ssize = getStringSize(string,font,fontSize);
+        Box tsBox = mmToTextSpace(boxInMM);
+        return new Box(tsBox.x + (tsBox.width-ssize.x)/2,
+        tsBox.y +(tsBox.height-ssize.y)/2 - (font.getFontDescriptor().getDescent()/1000*fontSize),
+               ssize.x,ssize.y );
+    }
+
+
+     void editPage0(PdfEditParams editParams) throws IOException {
+        PDPage page = doc.getPage(0);
+
+        PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, false);
+        RGB color = new RGB(100,100,100);
+
+         putText( contentStream, editParams.getRecipient(), arialFont, 18,RECIP_BOX_MM,color );
+         putText( contentStream, editParams.getValue(), arialFont, 18,VALUE_BOX_MM,color );
+         putText( contentStream, editParams.getExpirationDate(), arialFont, 18,EXPIRATION_BOX_MM,color );
+         putText( contentStream, editParams.getSerialNo(), arialFont, 14,SERIAL_BOX_MM,new RGB() );
+        contentStream.close();
+    }
+
+    private void editPage1(PdfEditParams editParams) throws IOException {
+        PDPage page = new PDPage(new PDRectangle( 210 * POINTS_PER_MM,148 * POINTS_PER_MM));
+        doc.addPage(page);
+//        PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, false);
+//        putText( contentStream, "Numer Seryjny: "+editParams.getSerialNo(), arialFont, 18,new Box(20,30,60,20),new RGB() );
+//        PDImageXObject pdImage = PDImageXObject.createFromByteArray(doc, editParams.getQrCode(), "qrcode.png");
+//        contentStream.drawImage(pdImage, getX(30),getY(100));
+//        contentStream.close();
+        addForm(page);
+    }
+    private void addForm(PDPage page) throws IOException {
+        // Adobe Acrobat uses Helvetica as a default font and
+        // stores that under the name '/Helv' in the resources dictionary
+        PDFont font = PDType1Font.HELVETICA;
+        PDResources resources = new PDResources();
+        resources.put(COSName.getPDFName("Helv"), font);
+
+        // Add a new AcroForm and add that to the document
+        PDAcroForm acroForm = new PDAcroForm(doc);
+        doc.getDocumentCatalog().setAcroForm(acroForm);
+
+        // Add and set the resources and default appearance at the form level
+        acroForm.setDefaultResources(resources);
+
+        // Acrobat sets the font size on the form level to be
+        // auto sized as default. This is done by setting the font size to '0'
+        String defaultAppearanceString = "/Helv 0 Tf 0 g";
+        acroForm.setDefaultAppearance(defaultAppearanceString);
+
+        // Add a form field to the form.
+        PDTextField textBox = new PDTextField(acroForm);
+        textBox.setPartialName("SampleField");
+
+        // Acrobat sets the font size to 12 as default
+        // This is done by setting the font size to '12' on the
+        // field level.
+        // The text color is set to blue in this example.
+        // To use black, replace "0 0 1 rg" with "0 0 0 rg" or "0 g".
+        defaultAppearanceString = "/Helv 12 Tf 0 0 1 rg";
+        textBox.setDefaultAppearance(defaultAppearanceString);
+
+        // add the field to the acroform
+        acroForm.getFields().add(textBox);
+
+        // Specify the annotation associated with the field
+        PDAnnotationWidget widget = textBox.getWidgets().get(0);
+        PDRectangle rect = new PDRectangle(50, 750, 200, 50);
+        widget.setRectangle(rect);
+        widget.setPage(page);
+
+        // set green border and yellow background
+        // if you prefer defaults, just delete this code block
+        PDAppearanceCharacteristicsDictionary fieldAppearance
+                = new PDAppearanceCharacteristicsDictionary(new COSDictionary());
+        fieldAppearance.setBorderColour(new PDColor(new float[]{0,1,0}, PDDeviceRGB.INSTANCE));
+        fieldAppearance.setBackground(new PDColor(new float[]{1,1,0}, PDDeviceRGB.INSTANCE));
+        widget.setAppearanceCharacteristics(fieldAppearance);
+
+        // make sure the annotation is visible on screen and paper
+        widget.setPrinted(true);
+
+        // Add the annotation to the page
+        page.getAnnotations().add(widget);
+
+        // set the field value
+        textBox.setValue("Sample field");
+    }
+
+    private void putText(PDPageContentStream contentStream, String text, PDFont font, float fontSize,Box mmBox, RGB color) throws IOException {
+        Box expBox = centerString(text,font,fontSize,mmBox);
+        contentStream.beginText();
+        contentStream.setFont(font, fontSize);
+        contentStream.setNonStrokingColor(color.red, color.green, color.blue);
+        contentStream.newLineAtOffset(expBox.x, expBox.y);
+        contentStream.showText(text);
+        contentStream.endText();
+    }
+
+    private  PDDocument loadDocument() throws IOException {
+        InputStream input = PdfEditor.class.getResourceAsStream(INPUT_PDF);
         PDDocument doc = PDDocument.load(input);
-        System.out.println("PDF loaded");
+        input.close();
         return doc;
     }
 
-    static void saveDocument(PDDocument doc) throws IOException {
-        //Saving the document
+    private InputStream saveDocument() throws IOException {
         doc.save(OUTPUT_PDF);
-
-        //Closing the document
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        doc.save(outputStream);
         doc.close();
+        return new ByteArrayInputStream(outputStream.toByteArray());
     }
 
-    static void addNapis(PDDocument doc) throws IOException {
-        PDPage page = doc.getPage(0);
-
-        PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND,false);
-
-
-        //Begin the Content stream
-
-        contentStream.beginText();
-        //contentStream.setTextMatrix(Matrix.getRotateInstance(0, (float) 1.0, (float) -1.0));
-        //Setting the font to the Content stream
-        contentStream.setFont(PDType1Font.TIMES_BOLD_ITALIC, 14);
-
-        //Setting the position for the line
-
-        float x = 110*MM_TO_UNITS;
-        float y = page.getBBox().getHeight() - 45*MM_TO_UNITS;
-        contentStream.newLineAtOffset(x,y);
-
-
-        String text1 = "Antoni Wzywa Do Broni";
-
-        //Adding text in the form of string
-        contentStream.showText(text1);
-
-        //Ending the content stream
-        contentStream.endText();
-
-        System.out.println("New Text ");
-
-        //Closing the content stream
-        contentStream.close();
-    }
-
-    public static void main(String argv[]) throws IOException {
-
-        PDDocument doc = loadDocument();
-        addNapis(doc);
-        saveDocument(doc);
-
-
-
-        //Loading an existing document
-
-//Adding a blank page to the document
-//        doc.addPage(new PDPage());
-/*
-        PDPage page = doc.getPage(0);
-        InputStream inputStream = page.getContents();
-        String text = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-
-        System.out.println(text);
-
-        PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND,false);
-
-
-        //Begin the Content stream
-
-        contentStream.beginText();
-        contentStream.setTextMatrix(Matrix.getRotateInstance(0, (float) 1.0, (float) -1.0));
-        //Setting the font to the Content stream
-        contentStream.setFont(PDType1Font.TIMES_BOLD_ITALIC, 14);
-
-        //Setting the position for the line
-        contentStream.newLineAtOffset(100, 100);
-
-
-        String text1 = "Hi!!! This is the first sample PDF document.";
-
-        //Adding text in the form of string
-        contentStream.showText(text1);
-
-        //Ending the content stream
-        contentStream.endText();
-
-        System.out.println("New Text Content is added in the PDF Document.");
-
-        //Closing the content stream
-        contentStream.close();
-*/
-
-
-    }
 }
