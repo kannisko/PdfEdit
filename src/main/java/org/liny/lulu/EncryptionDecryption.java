@@ -30,10 +30,25 @@ public class EncryptionDecryption {
 
     //numer kolejny
     //wartość
-    //data zakupu ->expiration
+    //data zakupu -> expiration
+    //kupujący imię, nazwisko
+    //email kupujacego
+    //telefon kupujacego
+    //obdarowany
+    //z tego
+    // kolejny;VLLencryptedNumer;Base64(json przeciurany
+
+
+
+
 
     public EncryptionDecryption() throws IOException {
         this.numberEncryptionTab = getDefaultEncryptionTab();
+    }
+
+    public String encryptVoucherData(VoucherData vData){
+        String json =
+
     }
 
     public String encodeNumber(int no) {
