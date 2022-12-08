@@ -46,10 +46,6 @@ public class EncryptionDecryption {
         this.numberEncryptionTab = getDefaultEncryptionTab();
     }
 
-    public String encryptVoucherData(VoucherData vData){
-        String json =
-
-    }
 
     public String encodeNumber(int no) {
         if (no <= 0 || no > 99999) {
