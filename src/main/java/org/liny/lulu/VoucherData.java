@@ -15,15 +15,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VoucherData {
-    int orderNo;
-    int value;
-    LocalDate purchaseDate;
-    String buyer;
-    String email;
-    String phone;
-    String recipient;
+    private  String vllNumber;
+    private int orderNo;
+    private int value;
+    private  LocalDate expirationDate;
+
+    private LocalDate purchaseDate;
+    private String buyer;
+    private String email;
+    private String phone;
+    private String recipient;
+
 
     public VoucherData() {
+    }
+
+    public void calcMissingFields(){
+        this.vllNumber = "VLL"+EncryptionDecryption.getInstance().encodeNumber(this.orderNo);
+        LocalDate tmp  = this.purchaseDate.plusMonths(6);
+        this.expirationDate = tmp.withDayOfMonth(tmp.lengthOfMonth());
+    }
+
+    public LocalDate getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(LocalDate expirationDate) {
+        this.expirationDate = expirationDate;
+    }
+
+    public String getVllNumber() {
+        return vllNumber;
+    }
+
+    public void setVllNumber(String vllNumber) {
+        this.vllNumber = vllNumber;
     }
 
     public int getOrderNo() {
@@ -86,6 +112,11 @@ public class VoucherData {
         this.phone = phone;
     }
 
+    public String toJson() throws JsonProcessingException {
+        ObjectMapper objectMapper = EncryptionDecryption.getObjectMapper();
+        return objectMapper.writer().writeValueAsString(this);
+    }
+
     public static List<VoucherData> getGetSampleData() {
         VoucherData data = new VoucherData();
         data.setOrderNo(1);
@@ -102,18 +133,12 @@ public class VoucherData {
     }
 
     public static String getSampleJsonString(List<VoucherData> data) throws JsonProcessingException {
-        ObjectMapper objectMapper = JsonMapper.builder()
-                .addModule(new JavaTimeModule())
-                .build();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-        ObjectWriter writer = objectMapper.writer();
+        ObjectWriter writer = EncryptionDecryption.getObjectMapper().writer();
         return writer.writeValueAsString(data);
     }
 
     public static List<VoucherData> readListFromJson(String json) throws JsonProcessingException {
-        ObjectMapper objectMapper = JsonMapper.builder()
-                .addModule(new JavaTimeModule())
-                .build();
+        ObjectMapper objectMapper = EncryptionDecryption.getObjectMapper();
         TypeReference<List<VoucherData>> typeReference = new TypeReference<List<VoucherData>>() {
             @Override
             public Type getType() {

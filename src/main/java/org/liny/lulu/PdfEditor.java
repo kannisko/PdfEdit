@@ -88,7 +88,7 @@ public class PdfEditor {
     }
 
 
-    public static InputStream preparePdf(PdfEditParams editParams) throws IOException {
+    public static byte[] preparePdf(PdfEditParams editParams) throws IOException {
         PdfEditor editor = new PdfEditor();
         editor.editPage0(editParams);
         return editor.saveDocument();
@@ -274,12 +274,12 @@ public class PdfEditor {
         return doc;
     }
 
-    private InputStream saveDocument() throws IOException {
-        doc.save(OUTPUT_PDF);
+    private byte[] saveDocument() throws IOException {
+        //doc.save(OUTPUT_PDF);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         doc.save(outputStream);
         doc.close();
-        return new ByteArrayInputStream(outputStream.toByteArray());
+        return outputStream.toByteArray();
     }
 
 }

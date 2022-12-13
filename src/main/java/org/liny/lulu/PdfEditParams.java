@@ -2,12 +2,23 @@ package org.liny.lulu;
 
 import java.io.InputStream;
 
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+
 public class PdfEditParams {
     private String serialNo;
     private String value;
     private String expirationDate;
     private String recipient;
     private byte qrCode[];
+
+    public PdfEditParams(){}
+    public PdfEditParams(VoucherData voucherData, byte qrCode[]){
+        this.serialNo = voucherData.getVllNumber();
+        this.value = Integer.toString(voucherData.getValue())+"PLN";
+        this.expirationDate = voucherData.getExpirationDate().format(ISO_LOCAL_DATE);
+        this.recipient = voucherData.getRecipient();
+        this.qrCode = qrCode;
+    }
 
     public String getSerialNo() {
         return serialNo;

@@ -5,13 +5,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.util.Base64;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.util.Base64.getEncoder;
 
 public class EncryptionDecryption {
 
@@ -39,11 +44,55 @@ public class EncryptionDecryption {
     // kolejny;VLLencryptedNumer;Base64(json przeciurany
 
 
+    private static EncryptionDecryption instance;
+    public static EncryptionDecryption getInstance(){
+        if( instance == null ){
+            try {
+                instance = new EncryptionDecryption();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        return instance;
+    }
 
+    private static ObjectMapper objectMapper;
+    public static ObjectMapper getObjectMapper(){
+        if( objectMapper == null){
+            objectMapper = JsonMapper.builder()
+                    .addModule(new JavaTimeModule())
+                    .build();
+            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        }
+        return objectMapper;
+    }
 
-
-    public EncryptionDecryption() throws IOException {
+    private EncryptionDecryption() throws IOException {
         this.numberEncryptionTab = getDefaultEncryptionTab();
+    }
+
+    public String encryptForQR(VoucherData order) throws JsonProcessingException {
+        StringBuilder sb = new StringBuilder(order.getVllNumber()).append(';').append(order.getOrderNo()).append(';');
+        String json = order.toJson();
+        byte bytes[] =  json.getBytes(StandardCharsets.UTF_8);
+        Base64.Encoder encoder = getEncoder();
+        String encoded = encoder.encodeToString(bytes);
+        sb.append(encoded);
+        return sb.toString();
+    }
+
+    public String decryptFromQR(String encrypted){
+        int endIndex = encrypted.indexOf(';');
+        String vll = encrypted.substring(0,endIndex);
+        int beginIndex = endIndex+1;
+        endIndex = encrypted.indexOf(';',beginIndex);
+        String no = encrypted.substring(beginIndex,endIndex);
+        String encJson = encrypted.substring(endIndex+1);
+        Base64.Decoder decoder  = Base64.getDecoder();
+        byte bytes[] = decoder.decode(encJson);
+        String json = new String(bytes);
+        return json;
     }
 
 
@@ -136,7 +185,7 @@ public class EncryptionDecryption {
         } while (comm.next());
     }
 
-    static class Kombination {
+    private static class Kombination {
         List<Character> charTab = createCharTab();
         int kombi[] = new int[5];
         int modulo = charTab.size() - 1;
