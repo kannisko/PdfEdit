@@ -39,31 +39,29 @@ public class ProcessOrders {
 
                 PdfEditParams pdfEditParams = new PdfEditParams(order, fullOrderData.getQrCode());
                 fullOrderData.setPdf(PdfEditor.preparePdf(pdfEditParams));
+                fullOrderData.setPdfA6Front(PdfEditor.prepareA6Front(pdfEditParams));
+                fullOrderData.setPdfA6Back(PdfEditor.prepareA6Back(pdfEditParams));
 
                 String zipName = order.getVllNumber() + "_" + String.format("%05d",order.getOrderNo())+".zip";
                 File zipFile = new File(zipName);
                 FileOutputStream fos = new FileOutputStream(zipFile);
-
                 ZipOutputStream zos = new ZipOutputStream(fos);
-                ZipEntry ze= new ZipEntry(order.getVllNumber()+".pdf");
-                zos.putNextEntry(ze);
-                zos.write(fullOrderData.getPdf());
-                zos.closeEntry();
-                ze= new ZipEntry(order.getVllNumber()+".png");
-                zos.putNextEntry(ze);
-                zos.write(fullOrderData.getQrCode());
-                zos.closeEntry();
-                ze= new ZipEntry(order.getVllNumber()+".json");
-                zos.putNextEntry(ze);
-                zos.write(fullOrderData.getVoucherData().toJson().getBytes(StandardCharsets.UTF_8));
-                zos.closeEntry();
 
+                addZipFile(zos,order.getVllNumber()+".pdf",fullOrderData.getPdf());
+                addZipFile(zos,order.getVllNumber()+"_frontA6.pdf",fullOrderData.getPdfA6Front());
+                addZipFile(zos,order.getVllNumber()+"_backA6.pdf",fullOrderData.getPdfA6Back());
+                addZipFile(zos,order.getVllNumber()+".png",fullOrderData.getQrCode());
+                addZipFile(zos,order.getVllNumber()+".json",fullOrderData.getVoucherData().toJson().getBytes(StandardCharsets.UTF_8));
                 zos.close();
                 fos.close();
-
-                //System.out.println(fullOrderData);
             }
+    }
 
 
+    public static void addZipFile(ZipOutputStream zos,String fileName,byte[] data) throws IOException {
+        ZipEntry ze= new ZipEntry(fileName);
+        zos.putNextEntry(ze);
+        zos.write(data);
+        zos.closeEntry();
     }
 }

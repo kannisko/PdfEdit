@@ -18,8 +18,13 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceCharacteristicsDictionary;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
+import org.apache.pdfbox.util.Matrix;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+import static org.apache.commons.io.FileUtils.readFileToString;
 
 public class PdfEditor {
     private static final int DEFAULT_USER_SPACE_UNIT_DPI = 72;
@@ -36,9 +41,13 @@ public class PdfEditor {
     private static final PDRectangle VALUE_BOX_MM = new PDRectangle(110, 80 + 18, 85, 18);
     private static final PDRectangle SERIAL_BOX_MM = new PDRectangle(5, 133 + 18, 20, 18);
 
+    private static final PDRectangle RECIP_BOX_MM_A6 = new PDRectangle(78, 30 + 13, 60, 13);
+    private static final PDRectangle EXPIRATION_BOX_MM_A6 = new PDRectangle(78, 82 + 13, 60, 13);
+    private static final PDRectangle VALUE_BOX_MM_A6 = new PDRectangle(78, 57 + 13, 60, 13);
+
     private final PDDocument doc;
     private final PDFont arialFont;
-    private final float pageHeight;
+     private float pageHeight;
 
     static class Point {
         float x;
@@ -78,24 +87,86 @@ public class PdfEditor {
     }
 
     public static void main(String argv[]) throws IOException, WriterException {
-        PdfEditParams params = new PdfEditParams();
-        params.setSerialNo("VLL12345");
-        params.setRecipient("Antoni Wchujdługienazwiskoalboijeszczedłuższe");
-        params.setValue("2137PLN");
-        params.setExpirationDate("2010-04-10");
-        params.setQrCode(QrCodeGenerator.createQR(params.getSerialNo(), 200, 200));
-        preparePdf(params);
+        EncryptionDecryption encryptionDecryption = EncryptionDecryption.getInstance();
+        File file = new File("./orders.json");
+        String json = readFileToString(file, StandardCharsets.UTF_8);
+        List<VoucherData> orders = VoucherData.readListFromJson(json);
+        //validate
+        VoucherData order =  orders.get(0);
+        order.calcMissingFields();
+        FullOrderData fullOrderData = new FullOrderData(order);
+        String encryptedForQR = encryptionDecryption.encryptForQR(order);
+        fullOrderData.setQrCode(QrCodeGenerator.createQR(encryptedForQR,200,200));
+        PdfEditParams pdfEditParams = new PdfEditParams(order, fullOrderData.getQrCode());
+        byte[] data = PdfEditor.prepareA6Front(pdfEditParams);
+        File zipFile = new File("a6front.pdf");
+        FileOutputStream fos = new FileOutputStream(zipFile);
+        fos.write(data);
+        fos.close();
     }
 
+    public static byte[] prepareA6Front(PdfEditParams editParams) throws IOException {
+        PdfEditor editor = new PdfEditor(PDRectangle.A6);
+        PDPage page = editor.doc.getPage(0);
+        PDPageContentStream contentStream = editor.getRotatedContent(page);
+        RGB color = new RGB(100, 100, 100);
+
+        if (editParams.getRecipient()!=null && !editParams.getRecipient().isEmpty()) {
+            editor.putTextAutoFormat(contentStream, editParams.getRecipient(), editor.arialFont, 13, RECIP_BOX_MM_A6, color);
+        }
+        editor.putText(contentStream, editParams.getValue(), editor.arialFont, 13, VALUE_BOX_MM_A6, color);
+        editor.putText(contentStream, editParams.getExpirationDate(), editor.arialFont, 13, EXPIRATION_BOX_MM_A6, color);
+
+        contentStream.close();
+        return editor.saveDocument();
+    }
+
+    PDPageContentStream getRotatedContent(PDPage page) throws IOException {
+        page.setRotation(90);
+        PDRectangle pageSize = page.getMediaBox();
+        float h = pageSize.getHeight();
+        float w = pageSize.getWidth();
+        pageHeight = h;
+
+        PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, false);
+
+        float tx = h / 2;
+        float ty = w / 2;
+        contentStream.transform(Matrix.getTranslateInstance(tx, ty));
+        contentStream.transform(Matrix.getRotateInstance(Math.toRadians(90), 0, 0));
+        contentStream.transform(Matrix.getTranslateInstance(-ty, -tx));
+
+        return contentStream;
+    }
+
+    public static byte[] prepareA6Back(PdfEditParams editParams) throws IOException {
+        PdfEditor editor = new PdfEditor(PDRectangle.A6);
+        PDPage page = editor.doc.getPage(0);
+        PDPageContentStream contentStream = editor.getRotatedContent(page);
+
+        editor.putText(contentStream, "Numer Seryjny: " + editParams.getSerialNo(), editor.arialFont, 18, new PDRectangle(30, 30, 40, 20), new RGB());
+        PDImageXObject pdImage = PDImageXObject.createFromByteArray(editor.doc, editParams.getQrCode(), "qrcode.png");
+        contentStream.drawImage(pdImage, editor.getX(20), editor.getY(100));
+
+
+        contentStream.close();
+        return editor.saveDocument();
+    }
 
     public static byte[] preparePdf(PdfEditParams editParams) throws IOException {
-        PdfEditor editor = new PdfEditor();
+        PdfEditor editor = new PdfEditor(INPUT_PDF);
         editor.editPage0(editParams);
         return editor.saveDocument();
     }
 
-    private PdfEditor() throws IOException {
-        this.doc = loadDocument();
+    private PdfEditor(String templateName) throws IOException {
+        this.doc = loadDocument(templateName);
+        this.arialFont = getFont("/arial.ttf");
+        this.pageHeight = doc.getPage(0).getBBox().getHeight();
+    }
+    private PdfEditor(PDRectangle rectangle) throws IOException {
+        this.doc = new PDDocument();
+        doc.addPage(new PDPage(rectangle));
         this.arialFont = getFont("/arial.ttf");
         this.pageHeight = doc.getPage(0).getBBox().getHeight();
     }
@@ -134,7 +205,7 @@ public class PdfEditor {
         boolean addForm = true;
         PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, false);
         RGB color = new RGB(100, 100, 100);
-        if (!editParams.getRecipient().isEmpty()) {
+        if (editParams.getRecipient()!=null && !editParams.getRecipient().isEmpty()) {
             putTextAutoFormat(contentStream, editParams.getRecipient(), arialFont, 18, RECIP_BOX_MM, color);
             addForm = false;
         }
@@ -267,8 +338,8 @@ public class PdfEditor {
         contentStream.endText();
     }
 
-    private PDDocument loadDocument() throws IOException {
-        InputStream input = PdfEditor.class.getResourceAsStream(INPUT_PDF);
+    private PDDocument loadDocument(String resourceName) throws IOException {
+        InputStream input = PdfEditor.class.getResourceAsStream(resourceName);
         PDDocument doc = PDDocument.load(input);
         input.close();
         return doc;
