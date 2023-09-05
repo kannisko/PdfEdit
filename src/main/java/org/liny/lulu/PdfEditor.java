@@ -38,7 +38,8 @@ public class PdfEditor {
 
     private static final PDRectangle RECIP_BOX_MM = new PDRectangle(110, 45 + 18, 85, 18);
     private static final PDRectangle EXPIRATION_BOX_MM = new PDRectangle(110, 115 + 18, 85, 18);
-    private static final PDRectangle VALUE_BOX_MM = new PDRectangle(110, 80 + 18, 85, 18);
+    //private static final PDRectangle VALUE_BOX_MM = new PDRectangle(110, 80 + 18, 85, 18);
+    private static final PDRectangle VALUE_BOX_MM = new PDRectangle(115, 80 + 18, 75, 18);
     private static final PDRectangle SERIAL_BOX_MM = new PDRectangle(5, 133 + 18, 20, 18);
 
     private static final PDRectangle RECIP_BOX_MM_A6 = new PDRectangle(78, 30 + 13, 60, 13);
@@ -114,7 +115,8 @@ public class PdfEditor {
         if (editParams.getRecipient()!=null && !editParams.getRecipient().isEmpty()) {
             editor.putTextAutoFormat(contentStream, editParams.getRecipient(), editor.arialFont, 13, RECIP_BOX_MM_A6, color);
         }
-        editor.putText(contentStream, editParams.getValue(), editor.arialFont, 13, VALUE_BOX_MM_A6, color);
+//        editor.putText(contentStream, editParams.getValue(), editor.arialFont, 13, VALUE_BOX_MM_A6, color);
+        editor.putTextAutoFormat(contentStream, editParams.getValue(), editor.arialFont, 13, VALUE_BOX_MM_A6, color);
         editor.putText(contentStream, editParams.getExpirationDate(), editor.arialFont, 13, EXPIRATION_BOX_MM_A6, color);
 
         contentStream.close();
@@ -209,7 +211,8 @@ public class PdfEditor {
             putTextAutoFormat(contentStream, editParams.getRecipient(), arialFont, 18, RECIP_BOX_MM, color);
             addForm = false;
         }
-        putText(contentStream, editParams.getValue(), arialFont, 18, VALUE_BOX_MM, color);
+        //putText(contentStream, editParams.getValue(), arialFont, 18, VALUE_BOX_MM, color);
+        putTextAutoFormat(contentStream, editParams.getValue(), arialFont, 18, VALUE_BOX_MM, color);
         putText(contentStream, editParams.getExpirationDate(), arialFont, 18, EXPIRATION_BOX_MM, color);
         putText(contentStream, editParams.getSerialNo(), arialFont, 14, SERIAL_BOX_MM, new RGB());
 
@@ -310,6 +313,13 @@ public class PdfEditor {
         int spaceIndex = text.indexOf(' ');
         String txt1,txt2;
         if( spaceIndex > 0 ){
+            int ii;
+            while( (ii=text.indexOf(' ',spaceIndex+1)) > 0){
+                if( ii >=text.length()/2){
+                    break;
+                }
+                spaceIndex = ii;
+            }
             txt1 = text.substring(0,spaceIndex);
             txt2 = text.substring(spaceIndex+1);
         }else{

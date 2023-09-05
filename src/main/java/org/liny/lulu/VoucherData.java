@@ -18,13 +18,14 @@ public class VoucherData {
     private  String vllNumber;
     private int orderNo;
     private int value;
+    private String valueText;
     private  LocalDate expirationDate;
-
     private LocalDate purchaseDate;
     private String buyer;
     private String email;
     private String phone;
     private String recipient;
+    private String comments;
 
 
     public VoucherData() {
@@ -66,6 +67,14 @@ public class VoucherData {
 
     public void setValue(int value) {
         this.value = value;
+    }
+
+    public String getValueText() {
+        return valueText;
+    }
+
+    public void setValueText(String valueText) {
+        this.valueText = valueText;
     }
 
     public LocalDate getPurchaseDate() {
@@ -110,6 +119,14 @@ public class VoucherData {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 
     public String toJson() throws JsonProcessingException {
