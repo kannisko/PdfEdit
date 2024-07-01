@@ -1,7 +1,5 @@
 package org.liny.lulu;
 
-import java.io.InputStream;
-
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 
 public class PdfEditParams {
@@ -14,7 +12,10 @@ public class PdfEditParams {
     public PdfEditParams(){}
     public PdfEditParams(VoucherData voucherData, byte qrCode[]){
         this.serialNo = voucherData.getVllNumber();
-        this.value = Integer.toString(voucherData.getValue())+"PLN";
+        this.value = voucherData.getValueText();
+        if( this.value == null || this.value.isEmpty()) {
+            this.value = voucherData.getValue() + "PLN";
+        }
         this.expirationDate = voucherData.getExpirationDate().format(ISO_LOCAL_DATE);
         this.recipient = voucherData.getRecipient();
         this.qrCode = qrCode;
