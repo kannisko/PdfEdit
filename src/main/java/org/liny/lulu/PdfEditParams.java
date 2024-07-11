@@ -7,6 +7,7 @@ public class PdfEditParams {
     private String value;
     private String expirationDate;
     private String recipient;
+    private String comments;
     private byte qrCode[];
 
     public PdfEditParams(){}
@@ -18,6 +19,7 @@ public class PdfEditParams {
         }
         this.expirationDate = voucherData.getExpirationDate().format(ISO_LOCAL_DATE);
         this.recipient = voucherData.getRecipient();
+        this.comments = voucherData.getComments();
         this.qrCode = qrCode;
     }
 
@@ -59,5 +61,13 @@ public class PdfEditParams {
 
     public void setQrCode( byte[] qrCode) {
         this.qrCode = qrCode;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 }

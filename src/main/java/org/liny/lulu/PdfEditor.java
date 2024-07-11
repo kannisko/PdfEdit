@@ -1,6 +1,7 @@
 package org.liny.lulu;
 
 import com.google.zxing.WriterException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -33,7 +34,7 @@ public class PdfEditor {
     private static final float POINTS_PER_INCH = 72;
     private static final float POINTS_PER_MM = 1 / (10 * 2.54f) * POINTS_PER_INCH;
 
-    public static final String INPUT_PDF = "/voucher v2.pdf";
+    public static final String INPUT_PDF = "/voucher_A4.pdf";
     public static final String OUTPUT_PDF = "./output.pdf";
 
     private static final PDRectangle RECIP_BOX_MM = new PDRectangle(110, 45 + 18, 85, 18);
@@ -42,10 +43,12 @@ public class PdfEditor {
     private static final PDRectangle VALUE_BOX_MM = new PDRectangle(115, 80 + 18, 75, 18);
     private static final PDRectangle SERIAL_BOX_MM = new PDRectangle(5, 133 + 18, 20, 18);
 
-    private static final PDRectangle RECIP_BOX_MM_A6 = new PDRectangle(78, 30 + 13, 60, 13);
-    private static final PDRectangle EXPIRATION_BOX_MM_A6 = new PDRectangle(78, 82 + 13, 60, 13);
-    private static final PDRectangle VALUE_BOX_MM_A6 = new PDRectangle(78, 57 + 13, 60, 13);
+    private static final PDRectangle RECIP_BOX_MM_A6 = new PDRectangle(78, 25 + 13, 60, 13);
+    private static final PDRectangle COMMENTS_BOX_MM_A6 = new PDRectangle(78, 40 + 13, 60, 13);
+    private static final PDRectangle VALUE_BOX_MM_A6 = new PDRectangle(78, 64 + 13, 60, 13);
+    private static final PDRectangle EXPIRATION_BOX_MM_A6 = new PDRectangle(78, 89 + 13, 60, 13);
 
+    private static final PDRectangle SERIAL_BOX_MM_A6 = new PDRectangle(3, 93 + 10, 25, 10);
     private final PDDocument doc;
     private final PDFont arialFont;
      private float pageHeight;
@@ -99,28 +102,43 @@ public class PdfEditor {
         String encryptedForQR = encryptionDecryption.encryptForQR(order);
         fullOrderData.setQrCode(QrCodeGenerator.createQR(encryptedForQR,200,200));
         PdfEditParams pdfEditParams = new PdfEditParams(order, fullOrderData.getQrCode());
-        byte[] data = PdfEditor.prepareA6Front(pdfEditParams);
+        byte[] data = PdfEditor.prepareA6Front("/voucher_A6L.pdf",pdfEditParams);
         File zipFile = new File("a6front.pdf");
         FileOutputStream fos = new FileOutputStream(zipFile);
         fos.write(data);
         fos.close();
     }
 
-    public static byte[] prepareA6Front(PdfEditParams editParams) throws IOException {
-        PdfEditor editor = new PdfEditor(PDRectangle.A6);
+    public static byte[] prepareA6Front(String tepmplateName,PdfEditParams editParams) throws IOException {
+        PdfEditor editor = new PdfEditor(tepmplateName);
         PDPage page = editor.doc.getPage(0);
-        PDPageContentStream contentStream = editor.getRotatedContent(page);
-        RGB color = new RGB(100, 100, 100);
+        PDPageContentStream contentStream = new PDPageContentStream(editor.doc, page, PDPageContentStream.AppendMode.APPEND, false,true);
 
-        if (editParams.getRecipient()!=null && !editParams.getRecipient().isEmpty()) {
-            editor.putTextAutoFormat(contentStream, editParams.getRecipient(), editor.arialFont, 13, RECIP_BOX_MM_A6, color);
-        }
-//        editor.putText(contentStream, editParams.getValue(), editor.arialFont, 13, VALUE_BOX_MM_A6, color);
-        editor.putTextAutoFormat(contentStream, editParams.getValue(), editor.arialFont, 13, VALUE_BOX_MM_A6, color);
-        editor.putText(contentStream, editParams.getExpirationDate(), editor.arialFont, 13, EXPIRATION_BOX_MM_A6, color);
-
+        prepareA6Front(editor,editParams,contentStream,1.0f);
         contentStream.close();
         return editor.saveDocument();
+    }
+
+    private static PDRectangle scale(PDRectangle box,double scale){
+        if( scale == 1.0){
+            return box;
+        }
+        return  new PDRectangle(
+                (float)(box.getLowerLeftX()*scale),
+                (float)(box.getLowerLeftY()*scale),
+                (float)(box.getWidth()*scale),
+                (float)(box.getHeight()*scale));
+    }
+    public static void prepareA6Front( PdfEditor editor,PdfEditParams editParams, PDPageContentStream contentStream, float scale ) throws IOException {
+        RGB color = new RGB(100, 100, 100);
+
+        editor.putTextAutoFormat(contentStream, editParams.getRecipient(), editor.arialFont, 13*scale, scale(RECIP_BOX_MM_A6,scale), color);
+        if( !StringUtils.isEmpty(editParams.getComments())){
+            editor.putTextAutoFormat(contentStream, editParams.getComments(), editor.arialFont, 13*scale, scale(COMMENTS_BOX_MM_A6,scale), color);
+        }
+        editor.putTextAutoFormat(contentStream, editParams.getValue(), editor.arialFont, 13*scale, scale(VALUE_BOX_MM_A6,scale), color);
+        editor.putText(contentStream, editParams.getExpirationDate(), editor.arialFont, 13*scale, scale(EXPIRATION_BOX_MM_A6,scale), color);
+        editor.putText(contentStream, editParams.getSerialNo(), editor.arialFont, 10*scale, scale(SERIAL_BOX_MM_A6,scale), new RGB());
     }
 
     PDPageContentStream getRotatedContent(PDPage page) throws IOException {
@@ -130,7 +148,7 @@ public class PdfEditor {
         float w = pageSize.getWidth();
         pageHeight = h;
 
-        PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, false);
+        PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, false,true);
 
         float tx = h / 2;
         float ty = w / 2;
@@ -142,22 +160,26 @@ public class PdfEditor {
     }
 
     public static byte[] prepareA6Back(PdfEditParams editParams) throws IOException {
-        PdfEditor editor = new PdfEditor(PDRectangle.A6);
+        PdfEditor editor = new PdfEditor("/empty_A6L.pdf");
         PDPage page = editor.doc.getPage(0);
-        PDPageContentStream contentStream = editor.getRotatedContent(page);
+        PDPageContentStream contentStream = new PDPageContentStream(editor.doc, page, PDPageContentStream.AppendMode.APPEND, false,true);
 
         editor.putText(contentStream, "Numer Seryjny: " + editParams.getSerialNo(), editor.arialFont, 18, new PDRectangle(30, 30, 40, 20), new RGB());
         PDImageXObject pdImage = PDImageXObject.createFromByteArray(editor.doc, editParams.getQrCode(), "qrcode.png");
         contentStream.drawImage(pdImage, editor.getX(20), editor.getY(100));
-
 
         contentStream.close();
         return editor.saveDocument();
     }
 
     public static byte[] preparePdf(PdfEditParams editParams) throws IOException {
-        PdfEditor editor = new PdfEditor(INPUT_PDF);
-        editor.editPage0(editParams);
+        PdfEditor editor = new PdfEditor("/voucher_A4.pdf");
+        PDPage page = editor.doc.getPage(0);
+        PDPageContentStream contentStream = new PDPageContentStream(editor.doc, page, PDPageContentStream.AppendMode.APPEND, false,true);
+        prepareA6Front(editor,editParams,contentStream,1.41f);
+
+        editor.editPage0(contentStream,editParams);
+        contentStream.close();
         return editor.saveDocument();
     }
 
@@ -166,6 +188,7 @@ public class PdfEditor {
         this.arialFont = getFont("/arial.ttf");
         this.pageHeight = doc.getPage(0).getBBox().getHeight();
     }
+
     private PdfEditor(PDRectangle rectangle) throws IOException {
         this.doc = new PDDocument();
         doc.addPage(new PDPage(rectangle));
@@ -200,32 +223,30 @@ public class PdfEditor {
                 ssize.x, ssize.y);
     }
 
+    private void putText(PDPageContentStream contentStream, String text, PDFont font, float fontSize, PDRectangle mmBox, RGB color) throws IOException {
+        PDRectangle expBox = centerString(text, font, fontSize, mmBox);
+        contentStream.beginText();
+        contentStream.setFont(font, fontSize);
+        contentStream.setNonStrokingColor(color.red, color.green, color.blue);
+        contentStream.newLineAtOffset(expBox.getLowerLeftX(), expBox.getLowerLeftY());
+        contentStream.showText(text);
+        contentStream.endText();
+    }
 
-    void editPage0(PdfEditParams editParams) throws IOException {
-        PDPage page = doc.getPage(0);
+    private void rawText(String text, PDPageContentStream contentStream,int xMM, int yMM,PDFont font, float fontSize,  RGB color) throws IOException {
+        contentStream.beginText();
+        contentStream.setFont(font, fontSize);
+        contentStream.setNonStrokingColor(color.red, color.green, color.blue);
+        contentStream.newLineAtOffset(xMM, yMM);
+        contentStream.showText(text);
+        contentStream.endText();
 
-        boolean addForm = true;
-        PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, false);
-        RGB color = new RGB(100, 100, 100);
-        if (editParams.getRecipient()!=null && !editParams.getRecipient().isEmpty()) {
-            putTextAutoFormat(contentStream, editParams.getRecipient(), arialFont, 18, RECIP_BOX_MM, color);
-            addForm = false;
-        }
-        //putText(contentStream, editParams.getValue(), arialFont, 18, VALUE_BOX_MM, color);
-        putTextAutoFormat(contentStream, editParams.getValue(), arialFont, 18, VALUE_BOX_MM, color);
-        putText(contentStream, editParams.getExpirationDate(), arialFont, 18, EXPIRATION_BOX_MM, color);
-        putText(contentStream, editParams.getSerialNo(), arialFont, 14, SERIAL_BOX_MM, new RGB());
+    }
 
+    void editPage0(PDPageContentStream contentStream,PdfEditParams editParams) throws IOException {
         putText(contentStream, "Numer Seryjny: " + editParams.getSerialNo(), arialFont, 18, new PDRectangle(30, 150+30, 40, 20), new RGB());
         PDImageXObject pdImage = PDImageXObject.createFromByteArray(doc, editParams.getQrCode(), "qrcode.png");
         contentStream.drawImage(pdImage, getX(20), getY(150+100));
-
-
-        contentStream.close();
-
-        if (addForm) {
-            addForm(page);
-        }
     }
 
     void addForm(PDPage page) throws IOException {
@@ -298,6 +319,9 @@ public class PdfEditor {
     }
 
     private void putTextAutoFormat(PDPageContentStream contentStream, String text, PDFont font, float fontSize, PDRectangle mmBox, RGB color) throws IOException {
+        if(StringUtils.isEmpty(text)){
+            return;
+        }
         text = text.strip();
         PDRectangle box = mmToTextSpace(mmBox);
         Point ssize = getStringSize(text, font, fontSize);
@@ -307,7 +331,7 @@ public class PdfEditor {
         }
         float scale =  box.getWidth() / ssize.x;
         if( scale > 0.8f ){
-            putText(contentStream,  text,  font,  fontSize*scale,  mmBox,  color);
+            putText(contentStream,  text,  font,  fontSize*scale*0.9f,  mmBox,  color);
             return;
         }
         int spaceIndex = text.indexOf(' ');
@@ -330,6 +354,9 @@ public class PdfEditor {
         float scale1 = getScale(txt1,font,fontSize,box);
         float scale2 = getScale(txt2,font,fontSize,box);
         scale = scale1 > scale2 ? scale2 : scale1;
+        if( scale > 1.0 ){
+           scale = 1.0f;
+        }
         fontSize *= scale;
         PDRectangle mmBox1 = new PDRectangle(mmBox.getLowerLeftX(),mmBox.getLowerLeftY()-mmBox.getHeight()/2
                 ,mmBox.getWidth(),mmBox.getHeight()/2);
@@ -338,15 +365,6 @@ public class PdfEditor {
         putText(contentStream,  txt2,  font,  fontSize,  mmBox2,  color);
     }
 
-    private void putText(PDPageContentStream contentStream, String text, PDFont font, float fontSize, PDRectangle mmBox, RGB color) throws IOException {
-        PDRectangle expBox = centerString(text, font, fontSize, mmBox);
-        contentStream.beginText();
-        contentStream.setFont(font, fontSize);
-        contentStream.setNonStrokingColor(color.red, color.green, color.blue);
-        contentStream.newLineAtOffset(expBox.getLowerLeftX(), expBox.getLowerLeftY());
-        contentStream.showText(text);
-        contentStream.endText();
-    }
 
     private PDDocument loadDocument(String resourceName) throws IOException {
         InputStream input = PdfEditor.class.getResourceAsStream(resourceName);

@@ -4,6 +4,7 @@ import com.google.zxing.WriterException;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -39,22 +40,32 @@ public class ProcessOrders {
 
                 PdfEditParams pdfEditParams = new PdfEditParams(order, fullOrderData.getQrCode());
                 fullOrderData.setPdf(PdfEditor.preparePdf(pdfEditParams));
-                fullOrderData.setPdfA6Front(PdfEditor.prepareA6Front(pdfEditParams));
+                fullOrderData.setPdfA6Front(PdfEditor.prepareA6Front("/empty_A6L.pdf",pdfEditParams));
                 fullOrderData.setPdfA6Back(PdfEditor.prepareA6Back(pdfEditParams));
 
                 String zipName = order.getVllNumber() + "_" + String.format("%05d",order.getOrderNo())+".zip";
-                File zipFile = new File(zipName);
-                FileOutputStream fos = new FileOutputStream(zipFile);
-                ZipOutputStream zos = new ZipOutputStream(fos);
-
-                addZipFile(zos,order.getVllNumber()+".pdf",fullOrderData.getPdf());
-                addZipFile(zos,order.getVllNumber()+"_frontA6.pdf",fullOrderData.getPdfA6Front());
-                addZipFile(zos,order.getVllNumber()+"_backA6.pdf",fullOrderData.getPdfA6Back());
-                addZipFile(zos,order.getVllNumber()+".png",fullOrderData.getQrCode());
-                addZipFile(zos,order.getVllNumber()+".json",fullOrderData.getVoucherData().toJson().getBytes(StandardCharsets.UTF_8));
-                zos.close();
-                fos.close();
+//                File zipFile = new File(zipName);
+//                FileOutputStream fos = new FileOutputStream(zipFile);
+//                ZipOutputStream zos = new ZipOutputStream(fos);
+//
+//                addZipFile(zos,order.getVllNumber()+".pdf",fullOrderData.getPdf());
+//                addZipFile(zos,order.getVllNumber()+"_frontA6.pdf",fullOrderData.getPdfA6Front());
+//                addZipFile(zos,order.getVllNumber()+"_backA6.pdf",fullOrderData.getPdfA6Back());
+//                addZipFile(zos,order.getVllNumber()+".png",fullOrderData.getQrCode());
+//                addZipFile(zos,order.getVllNumber()+".json",fullOrderData.getVoucherData().toJson().getBytes(StandardCharsets.UTF_8));
+//                zos.close();
+//                fos.close();
+                pdfToFile("a6Front.pdf",fullOrderData.getPdfA6Front());
+                pdfToFile("a6Back.pdf",fullOrderData.getPdfA6Back());
+                pdfToFile(order.getVllNumber()+".pdf",fullOrderData.getPdf());
             }
+    }
+
+    private static void pdfToFile(String fileName, byte data[]) throws IOException {
+        File filePdf = new File(fileName);
+        FileOutputStream pdfStream = new FileOutputStream(filePdf);
+        pdfStream.write(data);
+        pdfStream.close();
     }
 
 

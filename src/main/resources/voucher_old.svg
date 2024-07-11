@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="210mm"
    height="148mm"
    viewBox="0 0 210 148"
    version="1.1"
    id="svg1458"
-   inkscape:version="1.3.2 (1:1.3.2+202311252150+091e20ef0f)"
-   sodipodi:docname="voucher.svg"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:dc="http://purl.org/dc/elements/1.1/">
+   inkscape:version="1.0.2 (e86c870879, 2021-01-15, custom)"
+   sodipodi:docname="voucher.svg">
   <defs
      id="defs1452">
     <marker
@@ -75,20 +75,17 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1"
-     inkscape:cx="338"
-     inkscape:cy="470.5"
+     inkscape:cx="338.05261"
+     inkscape:cy="203.52898"
      inkscape:document-units="mm"
      inkscape:current-layer="layer4"
      inkscape:document-rotation="0"
      showgrid="false"
      inkscape:window-width="1920"
-     inkscape:window-height="1176"
-     inkscape:window-x="1920"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     inkscape:showpageshadow="2"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1" />
+     inkscape:window-height="1177"
+     inkscape:window-x="3832"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
   <metadata
      id="metadata1455">
     <rdf:RDF>
@@ -97,6 +94,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -173,8 +171,7 @@
     <text
        xml:space="preserve"
        id="text2097"
-       style="font-size:3.52778px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';white-space:pre;shape-inside:url(#rect2099)"
-       inkscape:label="text2097" />
+       style="font-size:3.52778px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';white-space:pre;shape-inside:url(#rect2099);" />
     <text
        xml:space="preserve"
        style="font-size:5.62334px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke-width:0.210875"
@@ -183,7 +180,15 @@
        id="text2117"
        transform="scale(0.99349056,1.0065521)"><tspan
          sodipodi:role="line"
-         id="tspan2">znajdź nas na linylulu.com</tspan></text>
+         id="tspan2115"
+         x="55.470734"
+         y="124.75229"
+         style="font-size:5.62334px;text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke-width:0.210875">znajdź nas na </tspan><tspan
+         sodipodi:role="line"
+         x="55.470734"
+         y="131.78146"
+         style="font-size:5.62334px;text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke-width:0.210875"
+         id="tspan2119">facebook.com/haltery.wodze.liny</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:14.2523px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';fill:#ece9a8;fill-opacity:1;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none"
@@ -206,73 +211,57 @@
        id="rect2423-3"
        width="84.489998"
        height="17.639999"
-       x="110.255"
-       y="90.254997"
+       x="110.25499"
+       y="80.254997"
        ry="3" />
     <rect
        style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#464646;stroke-width:0.51;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2423"
        width="84.489998"
        height="17.639999"
-       x="110.255"
-       y="35.255001"
+       x="110.25499"
+       y="45.255001"
        ry="3" />
     <text
        xml:space="preserve"
-       style="font-size:8.46667px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';fill:#ffffff;fill-opacity:1;stroke-width:0.264583"
-       x="119.71061"
-       y="31.060614"
+       style="font-size:8.46666667px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';fill:#ffffff;fill-opacity:1;stroke-width:0.264583;"
+       x="119.75884"
+       y="42.070713"
        id="text3043"><tspan
          sodipodi:role="line"
          id="tspan3041"
-         x="119.71061"
-         y="31.060614"
-         style="font-size:8.46667px;fill:#ffffff;fill-opacity:1;stroke-width:0.264583">dla</tspan></text>
+         x="119.75884"
+         y="42.070713"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:0.264583;font-size:8.46666667px;">dla</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:8.46667px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';fill:#ffffff;fill-opacity:1;stroke-width:0.264583"
-       x="119.9752"
-       y="86.093689"
+       style="font-size:8.46666667px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';fill:#ffffff;fill-opacity:1;stroke-width:0.264583;"
+       x="119.97106"
+       y="77.109299"
        id="text3047"><tspan
          sodipodi:role="line"
          id="tspan3045"
-         x="119.9752"
-         y="86.093689"
-         style="font-size:8.46667px;fill:#ffffff;fill-opacity:1;stroke-width:0.264583">wartość</tspan></text>
+         x="119.97106"
+         y="77.109299"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:0.264583;font-size:8.46666667px;">wartość</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:8.46667px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';fill:#ffffff;fill-opacity:1;stroke-width:0.264583"
-       x="119.71061"
-       y="121.09369"
+       style="font-size:8.46666667px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';fill:#ffffff;fill-opacity:1;stroke-width:0.264583;"
+       x="119.66199"
+       y="112.10932"
        id="text3051"><tspan
          sodipodi:role="line"
          id="tspan3049"
-         x="119.71061"
-         y="121.09369"
-         style="font-size:8.46667px;fill:#ffffff;fill-opacity:1;stroke-width:0.264583">data ważności</tspan></text>
+         x="119.66199"
+         y="112.10932"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:0.264583;font-size:8.46666667px;">data ważności</tspan></text>
     <rect
        style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#464646;stroke-width:0.51;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2423-8"
        width="84.489998"
        height="17.639999"
-       x="110.255"
-       y="125.255"
+       x="110.25499"
+       y="115.255"
        ry="3" />
-    <rect
-       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#464646;stroke-width:0.51;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect2423-3-2"
-       width="84.489998"
-       height="17.639999"
-       x="110.255"
-       y="55.255001"
-       ry="3" />
-    <rect
-       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#464646;stroke-width:0.218125;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect2423-4"
-       width="19.781874"
-       height="13.781875"
-       x="4.1241746"
-       y="130.8703"
-       ry="2.3438563" />
   </g>
 </svg>
