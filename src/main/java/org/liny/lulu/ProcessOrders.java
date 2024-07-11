@@ -44,20 +44,21 @@ public class ProcessOrders {
                 fullOrderData.setPdfA6Back(PdfEditor.prepareA6Back(pdfEditParams));
 
                 String zipName = order.getVllNumber() + "_" + String.format("%05d",order.getOrderNo())+".zip";
-//                File zipFile = new File(zipName);
-//                FileOutputStream fos = new FileOutputStream(zipFile);
-//                ZipOutputStream zos = new ZipOutputStream(fos);
-//
-//                addZipFile(zos,order.getVllNumber()+".pdf",fullOrderData.getPdf());
-//                addZipFile(zos,order.getVllNumber()+"_frontA6.pdf",fullOrderData.getPdfA6Front());
-//                addZipFile(zos,order.getVllNumber()+"_backA6.pdf",fullOrderData.getPdfA6Back());
-//                addZipFile(zos,order.getVllNumber()+".png",fullOrderData.getQrCode());
-//                addZipFile(zos,order.getVllNumber()+".json",fullOrderData.getVoucherData().toJson().getBytes(StandardCharsets.UTF_8));
-//                zos.close();
-//                fos.close();
-                pdfToFile("a6Front.pdf",fullOrderData.getPdfA6Front());
-                pdfToFile("a6Back.pdf",fullOrderData.getPdfA6Back());
-                pdfToFile(order.getVllNumber()+".pdf",fullOrderData.getPdf());
+                File zipFile = new File(zipName);
+                FileOutputStream fos = new FileOutputStream(zipFile);
+                ZipOutputStream zos = new ZipOutputStream(fos);
+
+                addZipFile(zos,order.getVllNumber()+".pdf",fullOrderData.getPdf());
+                addZipFile(zos,order.getVllNumber()+"_frontA6.pdf",fullOrderData.getPdfA6Front());
+                addZipFile(zos,order.getVllNumber()+"_backA6.pdf",fullOrderData.getPdfA6Back());
+                addZipFile(zos,order.getVllNumber()+".png",fullOrderData.getQrCode());
+                addZipFile(zos,order.getVllNumber()+".json",fullOrderData.getVoucherData().toJson().getBytes(StandardCharsets.UTF_8));
+                zos.close();
+                fos.close();
+
+//                pdfToFile("a6Front.pdf",fullOrderData.getPdfA6Front());
+//                pdfToFile("a6Back.pdf",fullOrderData.getPdfA6Back());
+//                pdfToFile(order.getVllNumber()+".pdf",fullOrderData.getPdf());
             }
     }
 
