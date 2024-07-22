@@ -44,7 +44,7 @@ public class PdfEditor {
     private static final PDRectangle SERIAL_BOX_MM = new PDRectangle(5, 133 + 18, 20, 18);
 
     private static final PDRectangle RECIP_BOX_MM_A6 = new PDRectangle(78, 25 + 13, 60, 13);
-    private static final PDRectangle COMMENTS_BOX_MM_A6 = new PDRectangle(78, 40 + 13, 60, 13);
+    private static final PDRectangle COMMENTS_BOX_MM_A6 = new PDRectangle(78, 39 + 13, 60, 13);
     private static final PDRectangle VALUE_BOX_MM_A6 = new PDRectangle(78, 64 + 13, 60, 13);
     private static final PDRectangle EXPIRATION_BOX_MM_A6 = new PDRectangle(78, 89 + 13, 60, 13);
 

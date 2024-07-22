@@ -41,6 +41,7 @@ public class ProcessOrders {
                 PdfEditParams pdfEditParams = new PdfEditParams(order, fullOrderData.getQrCode());
                 fullOrderData.setPdf(PdfEditor.preparePdf(pdfEditParams));
                 fullOrderData.setPdfA6Front(PdfEditor.prepareA6Front("/empty_A6L.pdf",pdfEditParams));
+//                fullOrderData.setPdfA6Front(PdfEditor.prepareA6Front("/voucher_A6L.pdf",pdfEditParams));
                 fullOrderData.setPdfA6Back(PdfEditor.prepareA6Back(pdfEditParams));
 
                 String zipName = order.getVllNumber() + "_" + String.format("%05d",order.getOrderNo())+".zip";
