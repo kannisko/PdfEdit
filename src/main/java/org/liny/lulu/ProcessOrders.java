@@ -50,8 +50,8 @@ public class ProcessOrders {
                 ZipOutputStream zos = new ZipOutputStream(fos);
 
                 addZipFile(zos,order.getVllNumber()+".pdf",fullOrderData.getPdf());
-                addZipFile(zos,order.getVllNumber()+"_frontA6.pdf",fullOrderData.getPdfA6Front());
-                addZipFile(zos,order.getVllNumber()+"_backA6.pdf",fullOrderData.getPdfA6Back());
+                addZipFile(zos,order.getOrderNo()+"_"+order.getVllNumber()+"_frontA6.pdf",fullOrderData.getPdfA6Front());
+                addZipFile(zos,order.getOrderNo()+"_"+order.getVllNumber()+"_backA6.pdf",fullOrderData.getPdfA6Back());
                 addZipFile(zos,order.getVllNumber()+".png",fullOrderData.getQrCode());
                 addZipFile(zos,order.getVllNumber()+".json",fullOrderData.getVoucherData().toJson().getBytes(StandardCharsets.UTF_8));
                 zos.close();
