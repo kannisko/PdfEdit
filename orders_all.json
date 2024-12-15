@@ -21,5 +21,7 @@
 
   {"orderNo":26,"value":100,"purchaseDate":[2024,9,1],"buyer":"Paint Ranch","email":"","recipient":"","comments":"IV Mistrzostwa Małopolski w Polish Cowboy Race - Paint Ranch 2024"},
   {"orderNo":27,"value":100,"purchaseDate":[2024,9,1],"buyer":"Paint Ranch","email":"","recipient":"","comments":"IV Mistrzostwa Małopolski w Polish Cowboy Race - Paint Ranch 2024"},
-  {"orderNo":28,"value":100,"purchaseDate":[2024,9,1],"buyer":"Paint Ranch","email":"","recipient":"","comments":"IV Mistrzostwa Małopolski w Polish Cowboy Race - Paint Ranch 2024"}
+  {"orderNo":28,"value":100,"purchaseDate":[2024,9,1],"buyer":"Paint Ranch","email":"","recipient":"","comments":"IV Mistrzostwa Małopolski w Polish Cowboy Race - Paint Ranch 2024"},
+  {"orderNo":29,"value":50,"purchaseDate":[2024,9,16],"buyer":"","email":"","recipient":"Estera Zawadzka","comments":""},
+  {"orderNo":30,"value":250,"purchaseDate":[2024,12,15],"buyer":"","email":"","recipient":"Weroniki Stanossek","comments":""}
 ]
