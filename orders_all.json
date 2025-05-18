@@ -25,5 +25,9 @@
   {"orderNo":29,"value":50,"purchaseDate":[2024,9,16],"buyer":"","email":"","recipient":"Estera Zawadzka","comments":""},
   {"orderNo":30,"value":250,"purchaseDate":[2024,12,15],"buyer":"","email":"","recipient":"Weroniki Stanossek","comments":""},
 
-  {"orderNo":31,"value":75,"purchaseDate":[2025,5,6],"buyer":"","email":"","recipient":"","comments":""}
+  {"orderNo":31,"value":75,"purchaseDate":[2025,5,6],"buyer":"","email":"","recipient":"","comments":""},
+
+  {"orderNo":32,"value":100,"purchaseDate":[2025,5,25],"buyer":"Rancho Leśna","email":"","recipient":"","comments":"PWRA CUP 2025 - Rancho Leśna"},
+  {"orderNo":33,"value":100,"purchaseDate":[2025,5,25],"buyer":"Rancho Leśna","email":"","recipient":"","comments":"PWRA CUP 2025 - Rancho Leśna"},
+  {"orderNo":34,"value":50, "purchaseDate":[2025,5,25],"buyer":"Rancho Leśna","email":"","recipient":"","comments":"PWRA CUP 2025 - Rancho Leśna"}
 ]
